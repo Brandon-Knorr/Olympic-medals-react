@@ -5,3 +5,7 @@
   text-align: center;
 }
 
+.country {
+  border: 2px;
+  border-color: white;
+}
