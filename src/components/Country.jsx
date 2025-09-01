@@ -12,6 +12,13 @@ function Country(props) {
 
 	//MAKING THE CHANGES FOR THE SECOND ASSIGNMENT.
 
+	//MAKING CHANGES FOR LAB
+
+	const TOTAL_MEDALS = props.MEDALS.reduce(
+		(sum, medal) => sum + (props.country[medal.name] || 0),
+		0
+	);
+
 	return (
 		<>
 			{/* <h3>
@@ -20,11 +27,19 @@ function Country(props) {
             <button onClick={handleClick}>+</button> */}
 
 			<div className="country-card">
-				<h4 className="country">
-					<u>{props.country.name}</u>
-				</h4>
-				<Medal medals={props.medals} />
 				<button onClick={() => props.onDelete(props.country.id)}>X</button>
+				<h4 className="country">{props.country.name}</h4>
+				<Medal
+					medals={props.MEDALS}
+					country={props.country}
+					onDecrement={props.onDecrement}
+					onIncrement={props.onIncrement}
+				/>
+				<div className="total-medals">
+					<h3>
+						<small> Total Medals: {TOTAL_MEDALS} </small>
+					</h3>
+				</div>
 			</div>
 		</>
 	);
