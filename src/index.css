@@ -12,7 +12,7 @@
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background: rgb(221, 239, 255);
   }
   a:hover {
     color: #747bff;

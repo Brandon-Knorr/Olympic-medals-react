@@ -3,6 +3,7 @@ import Country from "./components/Country";
 import { useState } from "react";
 import Medal from "./components/Medal";
 import { useRef } from "react";
+import NewCountry from "./components/NewCountry";
 
 function App() {
 	const [COUNTRIES, setCountries] = useState([
@@ -70,7 +71,6 @@ function App() {
 	}
 
 	//creating a function to get the total medals from all countries.
-
 	function getGrandTotalMedals(COUNTRIES, MEDALS) {
 		//takes in the countries and medals arrays
 		return COUNTRIES.reduce(
@@ -83,30 +83,60 @@ function App() {
 		);
 	}
 
+	//creating a function to add a country to the apps main page
+	function handleAddCountry(name) {
+		const trimmed = name.trim();
+		if (trimmed.length === 0) {
+			return;
+		}
+
+		//here we set the new country to the list of existing countries
+		// giving it a brand new id that is 1 more than the greatest current id
+		setCountries([
+			...COUNTRIES,
+			{
+				id:
+					COUNTRIES.length > 0
+						? Math.max(...COUNTRIES.map((c) => c.id)) + 1
+						: 1,
+				name: trimmed,
+				gold: 0,
+				silver: 0,
+				bronze: 0,
+			},
+		]);
+	}
+
 	return (
 		<>
-			<h1>Welcome To My Olympic Medal App!</h1>
+			<div className="app">
+				<h1>Welcome To My Olympic Medal App!</h1>
 
-			<h3>
-				Total Olympic Medals: {getGrandTotalMedals(COUNTRIES, MEDALS.current)}
-			</h3>
+				<h3>
+					Total Olympic Medals: {getGrandTotalMedals(COUNTRIES, MEDALS.current)}
+				</h3>
 
-			<div className="cards-container">
-				{COUNTRIES.map((country) => (
-					<Country
-						key={country.id}
-						country={country}
-						MEDALS={MEDALS.current}
-						onIncrement={handleIncrement}
-						onDecrement={handleDecrement}
-						onDelete={handleDelete}
-					/>
-				))}
+				<div className="cards-container">
+					{COUNTRIES.map((country) => (
+						<Country
+							key={country.id}
+							country={country}
+							MEDALS={MEDALS.current}
+							onIncrement={handleIncrement}
+							onDecrement={handleDecrement}
+							onDelete={handleDelete}
+						/>
+					))}
+				</div>
+
+				<NewCountry onAdd={handleAddCountry} />
+
+				<div className="footer-container">
+					<p>
+						<small>By: Brandon Knorr | &copy;Brandon Knorr Dev | 2025</small>
+					</p>
+				</div>
 			</div>
-
-			<p>
-				<small>By: Brandon Knorr | &copy;Brandon Knorr Dev | 2025</small>
-			</p>
 		</>
 	);
 }
