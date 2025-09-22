@@ -3,7 +3,7 @@ import Country from "./components/Country";
 import { useState, useEffect, useRef } from "react";
 import NewCountry from "./components/NewCountry";
 
-const API_URL = "http://localhost:5112/api/country";
+const API_URL = "http://localhost:5112/api/Country";
 
 function App() {
 	const [countries, setCountries] = useState([]);
