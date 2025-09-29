@@ -1,91 +1,100 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { Dialog, Flex, Button, Text, TextField } from "@radix-ui/themes";
+import { PlusCircledIcon } from "@radix-ui/react-icons";
+import { tc } from "../Utils.js";
 
-function NewCountry({ onAdd }) {
-	const [open, setOpen] = useState(false);
-	const [name, setName] = useState("");
-	const inputReference = useRef();
+function NewCountry(props) {
+	const [showDialog, setShowDialog] = useState(false);
+	const [newCountryName, setNewCountryName] = useState("");
 
-	//create a function the handles the opening of the modal
-	function handleOpen() {
-		setOpen(true);
-		//this setTimeout makes sure the modal is for sure open before focusing on the user input field value.
-		setTimeout(
-			() => inputReference.current && inputReference.current.focus(),
-			0
-		);
+	function hideDialog() {
+		setNewCountryName("");
+		setShowDialog(false);
 	}
-
-	//create a function that closes the modal and sets the input field back to an empty box
-	function handleClose() {
-		setOpen(false);
-		setName("");
-	}
-
-	//create a function that handles the submission of the form
-	function handleSubmit(e) {
-		e.preventDefault();
-		//there needs to be input validation that takes the spaces away from the input
-		const userAnswerTrimmed = name.trim();
-		//needs to make sure the box has text characters and not just spaces
-		if (userAnswerTrimmed.length === 0) {
-			return;
+	function handleSave() {
+		if (newCountryName.length > 0) {
+			props.onAdd(newCountryName);
+			hideDialog();
 		}
-		onAdd(userAnswerTrimmed);
-		handleClose();
 	}
+	function handleKeyUp(e) {
+		(e.keyCode ? e.keyCode : e.which) === 13 && handleSave();
+	}
+	const handleChange = (e) => {
+		setNewCountryName(tc(e.target.value));
+	};
 
 	return (
-		<>
-			<div>
-				<button
-					className="new-country-btn"
-					onClick={handleOpen}
+		<Dialog.Root
+			open={showDialog}
+			onOpenChange={setShowDialog}
+		>
+			<Dialog.Trigger>
+				<Button
+					size="2"
+					color="green"
+					variant="soft"
 				>
-					<b>+</b>
-				</button>
-				{open && (
-					<dialog
-						className="modal"
-						open
-					>
-						<form
-							className="new-country-form"
-							onSubmit={handleSubmit}
+					<PlusCircledIcon />
+				</Button>
+			</Dialog.Trigger>
+
+			<Dialog.Content maxWidth="450px">
+				<Dialog.Title>Add Country</Dialog.Title>
+				<Dialog.Description
+					size="2"
+					mb="4"
+				>
+					Enter the country name.
+				</Dialog.Description>
+				<Flex
+					direction="column"
+					gap="3"
+				>
+					<label>
+						<Text
+							as="div"
+							size="2"
+							mb="1"
+							weight="bold"
 						>
-							<label>
-								Country Name:{" "}
-								{/*this is just to create some space in between the label and input */}
-								<input
-									type="text"
-									name="new country"
-									id="new country"
-									ref={inputReference}
-									value={name}
-									onChange={(e) => setName(e.target.value)}
-									autoFocus
-								/>
-							</label>
-							<div>
-								<button
-									type="submit"
-									className="add-country-btn"
-									disabled={name.trim().length === 0}
-								>
-									Add
-								</button>
-								<button
-									className="cancel-btn"
-									type="button"
-									onClick={handleClose}
-								>
-									Cancel
-								</button>
-							</div>
-						</form>
-					</dialog>
-				)}
-			</div>
-		</>
+							Name
+						</Text>
+						<TextField.Root
+							name="newCountryName"
+							placeholder="Enter the country name"
+							onChange={handleChange}
+							value={newCountryName}
+							autoComplete="off"
+							onKeyUp={handleKeyUp}
+						/>
+					</label>
+				</Flex>
+				<Flex
+					gap="3"
+					mt="4"
+					justify="end"
+				>
+					<Dialog.Close>
+						<Button
+							variant="soft"
+							color="gray"
+							onClick={(e) => hideDialog()}
+						>
+							Cancel
+						</Button>
+					</Dialog.Close>
+					<Dialog.Close>
+						<Button
+							onClick={handleSave}
+							disabled={newCountryName.trim().length === 0}
+						>
+							Save
+						</Button>
+					</Dialog.Close>
+				</Flex>
+			</Dialog.Content>
+		</Dialog.Root>
 	);
 }
 

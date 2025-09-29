@@ -1,192 +1,20 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0;
-  height: 100%;
-  text-align: center;
-  background: rgb(221, 239, 255);
-}
-
-.app {
-  background: rgb(221, 239, 255);
-  min-height: 100vh;
-}
-
-.footer-container {
-  position: fixed;
-  bottom: 0;
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-
-  display: flex;
+  height: 100%;
+  z-index: -1;
+  background: url("./assets/rings.svg") no-repeat bottom 18px center fixed;
+}
+.grid-container {
+  grid-template-columns: repeat(auto-fit, 300px);
   justify-content: center;
 }
-
-.modal {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.2);
-  padding: 32px 24px;
-  background: #f8fbff;
-  min-width: 320px;
-  max-width: 90vw;
-  margin: auto;
-  text-align: left;
+.fixedHeader {
+  border-bottom: solid rgba(120, 120, 120, 0.5) 0.5px;
+  position: sticky;
+  top: 0;
+  background-color: inherit;
+  z-index: 10;
 }
-
-h1 {
-  padding: 5px;
-  margin-bottom: 5px;
-  margin-top: 5px;
-}
-
-.cards-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px; /* space between cards */
-  justify-content: center; /* center cards horizontally */
-  align-items: flex-start; /* align cards to the top */
-}
-
-.country-card {
-  position: relative;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  padding: 16px;
-  margin: 12px 0;
-  max-width: 300px;
-  transition: box-shadow 0.2s;
-}
-
-
-.country-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-
-
-.country-card button:not(.medal-btn) {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-}
-
-
-.country {
-  margin: 8px 0;
-  border-bottom: 2px solid #3498db;
-  padding-bottom: 6px;
-}
-
-.medal-btn {
-  display: inline-block;
-  margin-left: 8px;
-  position: static;
-  background: #3498db;
-}
-
-
-.medal-btn.increment {
-  /* Optional: different color for increment */
-  background: #27ae60;
-}
-
-
-.medal-btn.decrement {
-  /* Optional: different color for decrement */
-  background: #e74c3c;
-}
-
-.medal-btn.decrement:disabled {
-  background: #ccc;
-  color: #888;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-
-.total-medals {
-  border-top: 2px solid #3498db;
-  margin-top: 16px;
-  padding-top: 12px;
-}
-
-.new-country-btn {
-  background: #3498db;
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin: 10px;
-}
-
-.new-country-btn:hover {
-  background: #217dbb;
-}
-
-.new-country-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.new-country-form input[type="text"] {
-  padding: 8px 10px;
-  border: 1px solid #b2bec3;
-  border-radius: 6px;
-  font-size: 1rem;
-  width: 100%;
-  margin-top: 4px;
-}
-
-.add-country-btn {
-  background: #27ae60;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 18px;
-  font-size: 1rem;
-  margin-right: 10px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.add-country-btn:disabled {
-  background: #b2bec3;
-  cursor: not-allowed;
-}
-
-.cancel-btn {
-  background: #e74c3c;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 18px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.cancel-btn:hover {
-  background: #c0392b;
-}
-
-
-button {
-  background: #e74c3c;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-}
-
-
-button:hover {
-  background: #c0392b;
-}
-
