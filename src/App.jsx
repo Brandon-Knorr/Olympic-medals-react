@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import Country from "./components/Country";
+import Login from "./components/Login";
 import {
 	Theme,
 	Button,
@@ -14,17 +15,28 @@ import "@radix-ui/themes/styles.css";
 import "./App.css";
 import NewCountry from "./components/NewCountry";
 import axios from "axios";
+import { HubConnectionBuilder } from "@microsoft/signalr";
 
 function App() {
 	const [appearance, setAppearance] = useState("dark");
+	// const apiEndpoint =
+	// 	"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/api/country";
 	const apiEndpoint =
-		"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/api/country";
+		"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/jwtapi/country";
+	const hubEndpoint =
+		"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/medalsHub";
+	const [connection, setConnection] = useState(null);
 	const [countries, setCountries] = useState([]);
 	const medals = useRef([
 		{ id: 1, name: "gold", color: "#FFD700" },
 		{ id: 2, name: "silver", color: "#C0C0C0" },
 		{ id: 3, name: "bronze", color: "#CD7F32" },
 	]);
+
+	const latestCountries = useRef(null);
+	//latestCountries is a ref variable to countries (state)
+	//this is needed to access state variable in useEffect w/o dependency
+	latestCountries.current = countries;
 
 	useEffect(() => {
 		// initial data loaded here
@@ -48,28 +60,92 @@ function App() {
 			setCountries(newCountries);
 		}
 		fetchCountries();
+
+		//signalR
+		const newConnection = new HubConnectionBuilder()
+			.withUrl(hubEndpoint)
+			.withAutomaticReconnect()
+			.build();
+
+		setConnection(newConnection);
 	}, []);
+
+	useEffect(() => {
+		if (connection) {
+			connection
+				.start()
+				.then(() => {
+					console.log("Connected!");
+
+					connection.on("ReceivedAddMessage", (country) => {
+						console.log(`Add: ${country.name}`);
+
+						let newCountry = {
+							id: country.id,
+							name: country.name,
+						};
+
+						medals.current.forEach((medal) => {
+							const count = country[medal.name];
+							newCountry[medal.name] = {
+								page_value: count,
+								saved_value: count,
+							};
+						});
+
+						//we need to use a reference to the countries array here
+						//since this useEffect has no dependency on countries array - its not in scope
+						let mutableCountries = [...latestCountries.current];
+						mutableCountries = mutableCountries.concat(newCountry);
+						setCountries(mutableCountries);
+					});
+
+					connection.on("ReceivedDeleteMessage", (id) => {
+						console.log(`Delete id: ${id}`);
+
+						let mutableCountries = [...latestCountries.current];
+						mutableCountries = mutableCountries.filter((c) => c.id !== id);
+						setCountries(mutableCountries);
+					});
+
+					connection.on("ReceivePatchMessage", (country) => {
+						console.log(`Patch: ${country.name}`);
+
+						let updatedCountry = {
+							id: country.id,
+							name: country.name,
+						};
+						medals.current.forEach((medal) => {
+							const count = country[medal.name];
+							updatedCountry[medal.name] = {
+								page_value: count,
+								saved_value: count,
+							};
+						});
+						let mutableCountries = [...latestCountries.current];
+						const idx = mutableCountries.findIndex((c) => c.id === country.id);
+						mutableCountries[idx] = updatedCountry;
+
+						setCountries(mutableCountries);
+					});
+				})
+				.catch((e) => console.log("Connection failed: ", e));
+		}
+	}, [connection]);
 
 	function toggleAppearance() {
 		setAppearance(appearance === "light" ? "dark" : "light");
 	}
 	async function handleAdd(name) {
 		try {
-			const { data: post } = await axios.post(apiEndpoint, { name: name });
-			let newCountry = {
-				id: post.id,
-				name: post.name,
-			};
-			console.log(newCountry);
-			medals.current.forEach((medal) => {
-				const count = post[medal.name];
-				// when a new country is added, we need to store page and saved values for
-				// medal counts in state
-				newCountry[medal.name] = { page_value: count, saved_value: count };
-			});
-			setCountries(countries.concat(newCountry));
+			await axios.post(apiEndpoint, { name: name });
 		} catch (ex) {
-			if (ex.response) {
+			if (
+				ex.response &&
+				(ex.response.status === 401 || ex.response.status === 403)
+			) {
+				alert("You are not authorized to complete this request");
+			} else if (ex.response) {
 				console.log(ex.response);
 			} else {
 				console.log("Request failed");
@@ -89,8 +165,17 @@ function App() {
 					"The record does not exist - it may have already been deleted"
 				);
 			} else {
-				alert("An error occurred while deleting");
 				setCountries(originalCountries);
+				if (
+					ex.response &&
+					(ex.response.status === 401 || ex.response.status === 403)
+				) {
+					alert("You are not authorized to complete this request");
+				} else if (ex.response) {
+					console.log(ex.response);
+				} else {
+					console.log("Request failed");
+				}
 			}
 		}
 	}
@@ -137,6 +222,13 @@ function App() {
 				console.log(
 					"The record does not exist - it may have already been deleted"
 				);
+			} else if (
+				ex.response &&
+				(ex.response.status === 401 || ex.response.status === 403)
+			) {
+				alert("You are not authorized to complete this request");
+				// to simplify, I am reloading the page to restore "saved" values
+				window.location.reload(false);
 			} else {
 				alert("An error occurred while updating");
 				setCountries(originalCountries);
@@ -171,6 +263,7 @@ function App() {
 			>
 				{appearance === "dark" ? <MoonIcon /> : <SunIcon />}
 			</Button>
+			<Login />
 			<Flex
 				p="2"
 				pl="8"
