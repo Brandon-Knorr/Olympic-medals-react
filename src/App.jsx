@@ -10,6 +10,7 @@ import {
 	Badge,
 	Container,
 	Grid,
+	Tooltip, // added tooltip
 } from "@radix-ui/themes";
 import { SunIcon, MoonIcon } from "@radix-ui/react-icons";
 import "@radix-ui/themes/styles.css";
@@ -315,13 +316,15 @@ function App() {
 
 	return (
 		<Theme appearance={appearance}>
-			<Button
-				onClick={toggleAppearance}
-				style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100 }}
-				variant="ghost"
-			>
-				{appearance === "dark" ? <MoonIcon /> : <SunIcon />}
-			</Button>
+			<Tooltip content="Toggle Theme">
+				<Button
+					onClick={toggleAppearance}
+					style={{ position: "fixed", bottom: 20, right: 20, zIndex: 100 }}
+					variant="ghost"
+				>
+					{appearance === "dark" ? <MoonIcon /> : <SunIcon />}
+				</Button>
+			</Tooltip>
 			{user.authenticated ? (
 				<Logout onLogout={handleLogout} />
 			) : (

@@ -1,4 +1,13 @@
-import { Box, Table, Flex, Badge, Button, Text, Em } from "@radix-ui/themes";
+import {
+	Box,
+	Table,
+	Flex,
+	Badge,
+	Button,
+	Text,
+	Em,
+	Tooltip,
+} from "@radix-ui/themes";
 import { MinusIcon, PlusIcon } from "@radix-ui/react-icons";
 import MedalSvg from "./MedalSvg";
 import { tc } from "../Utils.js";
@@ -30,27 +39,31 @@ function Medal(props) {
 						align="center"
 						justify="between"
 					>
-						<Button
-							variant="ghost"
-							disabled={props.country[props.medal.name].page_value === 0}
-						>
-							<MinusIcon
-								onClick={() =>
-									props.country[props.medal.name].page_value > 0 &&
-									props.onDecrement(props.country.id, props.medal.name)
-								}
-							/>
-						</Button>
+						<Tooltip content="Decrement">
+							<Button
+								variant="ghost"
+								disabled={props.country[props.medal.name].page_value === 0}
+							>
+								<MinusIcon
+									onClick={() =>
+										props.country[props.medal.name].page_value > 0 &&
+										props.onDecrement(props.country.id, props.medal.name)
+									}
+								/>
+							</Button>
+						</Tooltip>
 						<Badge variant="outline">
 							{props.country[props.medal.name].page_value}
 						</Badge>
-						<Button variant="ghost">
-							<PlusIcon
-								onClick={() =>
-									props.onIncrement(props.country.id, props.medal.name)
-								}
-							/>
-						</Button>
+						<Tooltip content="Increment">
+							<Button variant="ghost">
+								<PlusIcon
+									onClick={() =>
+										props.onIncrement(props.country.id, props.medal.name)
+									}
+								/>
+							</Button>
+						</Tooltip>
 					</Flex>
 				) : (
 					<Flex
