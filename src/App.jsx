@@ -16,29 +16,32 @@ import "@radix-ui/themes/styles.css";
 import "./App.css";
 import NewCountry from "./components/NewCountry";
 import axios from "axios";
+import { getUser } from "./Utils.js";
 import { HubConnectionBuilder } from "@microsoft/signalr";
 
 function App() {
 	const [appearance, setAppearance] = useState("dark");
-	// const apiEndpoint =
-	// 	"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/api/country";
-	const apiEndpoint =
-		"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/jwtapi/country";
-	const hubEndpoint =
-		"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/medalsHub";
+	// const apiEndpoint = "https://medalsapi.azurewebsites.net/api/country";
+	const apiEndpoint = "https://medalsapi.azurewebsites.net/jwtapi/country";
+	const hubEndpoint = "https://medalsapi.azurewebsites.net/medalsHub";
 	const userEndpoint = "https://jwtswagger.azurewebsites.net/api/user/login";
 	const [connection, setConnection] = useState(null);
 	const [countries, setCountries] = useState([]);
-	const [authenticated, setAuthenticated] = useState(false);
+	const [user, setUser] = useState({
+		name: null,
+		authenticated: false,
+		canPost: false,
+		canPatch: false,
+		canDelete: false,
+	});
 	const medals = useRef([
 		{ id: 1, name: "gold", color: "#FFD700" },
 		{ id: 2, name: "silver", color: "#C0C0C0" },
 		{ id: 3, name: "bronze", color: "#CD7F32" },
 	]);
-
 	const latestCountries = useRef(null);
-	//latestCountries is a ref variable to countries (state)
-	//this is needed to access state variable in useEffect w/o dependency
+	// latestCountries is a ref variable to countries (state)
+	// this is needed to access state variable in useEffect w/o dependency
 	latestCountries.current = countries;
 
 	useEffect(() => {
@@ -64,7 +67,7 @@ function App() {
 		}
 		fetchCountries();
 
-		//signalR
+		// signalR
 		const newConnection = new HubConnectionBuilder()
 			.withUrl(hubEndpoint)
 			.withAutomaticReconnect()
@@ -80,14 +83,13 @@ function App() {
 				.then(() => {
 					console.log("Connected!");
 
-					connection.on("ReceivedAddMessage", (country) => {
+					connection.on("ReceiveAddMessage", (country) => {
 						console.log(`Add: ${country.name}`);
 
 						let newCountry = {
 							id: country.id,
 							name: country.name,
 						};
-
 						medals.current.forEach((medal) => {
 							const count = country[medal.name];
 							newCountry[medal.name] = {
@@ -95,15 +97,14 @@ function App() {
 								saved_value: count,
 							};
 						});
-
-						//we need to use a reference to the countries array here
-						//since this useEffect has no dependency on countries array - its not in scope
+						// we need to use a reference to countries array here
+						// since this useEffect has no dependeny on countries array - it is not in scope
 						let mutableCountries = [...latestCountries.current];
 						mutableCountries = mutableCountries.concat(newCountry);
 						setCountries(mutableCountries);
 					});
 
-					connection.on("ReceivedDeleteMessage", (id) => {
+					connection.on("ReceiveDeleteMessage", (id) => {
 						console.log(`Delete id: ${id}`);
 
 						let mutableCountries = [...latestCountries.current];
@@ -134,6 +135,7 @@ function App() {
 				})
 				.catch((e) => console.log("Connection failed: ", e));
 		}
+		// useEffect is dependent on changes to connection
 	}, [connection]);
 
 	function toggleAppearance() {
@@ -141,7 +143,17 @@ function App() {
 	}
 	async function handleAdd(name) {
 		try {
-			await axios.post(apiEndpoint, { name: name });
+			await axios.post(
+				apiEndpoint,
+				{
+					name: name,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${localStorage.getItem("token")}`,
+					},
+				}
+			);
 		} catch (ex) {
 			if (
 				ex.response &&
@@ -160,7 +172,11 @@ function App() {
 		const originalCountries = countries;
 		setCountries(countries.filter((c) => c.id !== countryId));
 		try {
-			await axios.delete(`${apiEndpoint}/${countryId}`);
+			await axios.delete(`${apiEndpoint}/${countryId}`, {
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
+			});
 		} catch (ex) {
 			if (ex.response && ex.response.status === 404) {
 				// country already deleted
@@ -248,16 +264,15 @@ function App() {
 		});
 		setCountries(mutableCountries);
 	}
-
 	async function handleLogin(username, password) {
 		try {
 			const resp = await axios.post(userEndpoint, {
 				username: username,
 				password: password,
 			});
-			const encodedJwt = resp.data.token;
-			console.log(encodedJwt);
-			setAuthenticated(true);
+			const encoded = resp.data.token;
+			localStorage.setItem("token", encoded);
+			setUser(getUser(encoded));
 		} catch (ex) {
 			if (
 				ex.response &&
@@ -271,11 +286,16 @@ function App() {
 			}
 		}
 	}
-
 	function handleLogout() {
-		setAuthenticated(false);
+		localStorage.removeItem("token");
+		setUser({
+			name: null,
+			authenticated: false,
+			canPost: false,
+			canPatch: false,
+			canDelete: false,
+		});
 	}
-
 	function getAllMedalsTotal() {
 		let sum = 0;
 		// use medal count displayed in the web page for medal count totals
@@ -294,7 +314,7 @@ function App() {
 			>
 				{appearance === "dark" ? <MoonIcon /> : <SunIcon />}
 			</Button>
-			{authenticated ? (
+			{user.authenticated ? (
 				<Logout onLogout={handleLogout} />
 			) : (
 				<Login onLogin={handleLogin} />
