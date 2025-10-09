@@ -11,6 +11,20 @@ import {
 
 function Login(props) {
 	const [open, setOpen] = useState(false);
+	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
+
+	function handleModalKeyPress(e) {
+		(e.keyCode ? e.keyCode : e.which) === 13 &&
+			username.length > 0 &&
+			password.length > 0 &&
+			handleLogin();
+	}
+
+	function handleLogin() {
+		props.onLogin(username, password);
+		setOpen(false);
+	}
 
 	return (
 		<>
@@ -27,7 +41,10 @@ function Login(props) {
 				open={open}
 				onOpenChange={setOpen}
 			>
-				<Dialog.Content maxWidth="450px">
+				<Dialog.Content
+					maxWidth="450px"
+					onKeyUp={handleModalKeyPress}
+				>
 					<Dialog.Title>Log In</Dialog.Title>
 					<Dialog.Description
 						size="2"
@@ -49,7 +66,16 @@ function Login(props) {
 							>
 								User Name
 							</Text>
-							<TextField.Root placeholder="Enter your user name" />
+							<TextField.Root
+								placeholder="Enter your user name"
+								autoCapitalize="off"
+								autoComplete="off"
+								autoCorrect="off"
+								autoFocus
+								name="username"
+								value={username}
+								onChange={(e) => setUsername(e.target.value)}
+							/>
 						</label>
 						<label>
 							<Text
@@ -63,6 +89,12 @@ function Login(props) {
 							<TextField.Root
 								type="Password"
 								placeholder="Enter your password"
+								autoCapitalize="off"
+								autoComplete="off"
+								autoCorrect="off"
+								name="password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
 							/>
 						</label>
 					</Flex>
@@ -81,7 +113,14 @@ function Login(props) {
 							</Button>
 						</Dialog.Close>
 						<Dialog.Close>
-							<Button>Login</Button>
+							<Button
+								onClick={handleLogin}
+								disabled={
+									username.trim().length === 0 || password.trim().length === 0
+								}
+							>
+								Login
+							</Button>
 						</Dialog.Close>
 					</Flex>
 				</Dialog.Content>

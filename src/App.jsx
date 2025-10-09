@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import Country from "./components/Country";
 import Login from "./components/Login";
+import Logout from "./components/Logout";
 import {
 	Theme,
 	Button,
@@ -25,8 +26,10 @@ function App() {
 		"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/jwtapi/country";
 	const hubEndpoint =
 		"https://olympic-medal-backend-f2cqcsavebctf4ez.eastus-01.azurewebsites.net/medalsHub";
+	const userEndpoint = "https://jwtswagger.azurewebsites.net/api/user/login";
 	const [connection, setConnection] = useState(null);
 	const [countries, setCountries] = useState([]);
+	const [authenticated, setAuthenticated] = useState(false);
 	const medals = useRef([
 		{ id: 1, name: "gold", color: "#FFD700" },
 		{ id: 2, name: "silver", color: "#C0C0C0" },
@@ -245,6 +248,34 @@ function App() {
 		});
 		setCountries(mutableCountries);
 	}
+
+	async function handleLogin(username, password) {
+		try {
+			const resp = await axios.post(userEndpoint, {
+				username: username,
+				password: password,
+			});
+			const encodedJwt = resp.data.token;
+			console.log(encodedJwt);
+			setAuthenticated(true);
+		} catch (ex) {
+			if (
+				ex.response &&
+				(ex.response.status === 401 || ex.response.status === 400)
+			) {
+				alert("Login failed");
+			} else if (ex.response) {
+				console.log(ex.response);
+			} else {
+				console.log("Request failed");
+			}
+		}
+	}
+
+	function handleLogout() {
+		setAuthenticated(false);
+	}
+
 	function getAllMedalsTotal() {
 		let sum = 0;
 		// use medal count displayed in the web page for medal count totals
@@ -263,7 +294,11 @@ function App() {
 			>
 				{appearance === "dark" ? <MoonIcon /> : <SunIcon />}
 			</Button>
-			<Login />
+			{authenticated ? (
+				<Logout onLogout={handleLogout} />
+			) : (
+				<Login onLogin={handleLogin} />
+			)}
 			<Flex
 				p="2"
 				pl="8"
