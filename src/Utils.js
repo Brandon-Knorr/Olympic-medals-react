@@ -1,3 +1,4 @@
+import { jwtDecode } from "jwt-decode";
 // convert string to title case
 export const tc = (str) =>
 	str.replace(

@@ -67,6 +67,10 @@ function App() {
 		}
 		fetchCountries();
 
+		const encoded = localStorage.getItem("token");
+		// check for existing token
+		encoded && setUser(getUser(encoded));
+
 		// signalR
 		const newConnection = new HubConnectionBuilder()
 			.withUrl(hubEndpoint)
@@ -234,7 +238,11 @@ function App() {
 		setCountries(mutableCountries);
 
 		try {
-			await axios.patch(`${apiEndpoint}/${countryId}`, jsonPatch);
+			await axios.patch(`${apiEndpoint}/${countryId}`, jsonPatch, {
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
+			});
 		} catch (ex) {
 			if (ex.response && ex.response.status === 404) {
 				// country already deleted
@@ -334,7 +342,7 @@ function App() {
 						<Heading size="6">{getAllMedalsTotal()}</Heading>
 					</Badge>
 				</Heading>
-				<NewCountry onAdd={handleAdd} />
+				{user.canPost && <NewCountry onAdd={handleAdd} />}
 			</Flex>
 			<Container className="bg"></Container>
 			<Grid
@@ -349,6 +357,8 @@ function App() {
 							key={country.id}
 							country={country}
 							medals={medals.current}
+							canDelete={user.canDelete}
+							canPatch={user.canPatch}
 							onDelete={handleDelete}
 							onSave={handleSave}
 							onReset={handleReset}

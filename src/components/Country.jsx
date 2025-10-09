@@ -68,15 +68,17 @@ function Country(props) {
 											</Button>
 										</>
 									)}
-									<Button
-										color="red"
-										variant="ghost"
-										size="1"
-									>
-										<TrashIcon
-											onClick={() => props.onDelete(props.country.id)}
-										/>
-									</Button>
+									{props.canDelete && (
+										<Button
+											color="red"
+											variant="ghost"
+											size="1"
+										>
+											<TrashIcon
+												onClick={() => props.onDelete(props.country.id)}
+											/>
+										</Button>
+									)}
 								</div>
 							</Flex>
 						</Table.ColumnHeaderCell>
@@ -90,6 +92,7 @@ function Country(props) {
 								key={medal.id}
 								medal={medal}
 								country={props.country}
+								canPatch={props.canPatch}
 								onIncrement={props.onIncrement}
 								onDecrement={props.onDecrement}
 							/>
